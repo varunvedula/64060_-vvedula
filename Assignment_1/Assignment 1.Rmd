@@ -1,0 +1,58 @@
+---
+title: "Assignment 1"
+author: "Varun Vedula"
+date: "2024-02-04"
+output:
+  html_document: default
+  pdf_document: default
+---
+# Top best places to visit in India
+## This data explains about which places are best to visit in India based on different factors.
+
+
+```{r}
+#Importing dataset-'Top Places in India' into R
+##Assigning the variable data_places to the imported data set.
+data_places= read.csv("./Top Places to visit in India.csv")
+head(data_places)
+```
+```{r}
+#Print out the descriptive statistics to analyse the overview.
+summary(data_places)
+```
+```{r}
+#Summary for Categorical Data which is the establishment year
+summary(data_places[,6])
+```
+```{r}
+#Summary for Continuous data which is the Google reviews as per my analysis
+summary(data_places[,9])
+```
+```{r}
+#Transforming the data set values of column.
+##Transforming 'Establishment Year' which is a integer to character
+as.character(data_places[,6])
+```
+```{r}
+#To transform the data from character to numeric.
+as.numeric(data_places[,14])
+```
+```{r}
+#To transfer the data from character to numeric
+as.numeric(data_places[,8])
+```
+```{r}
+#scatterplot for the data which is
+#X-Axis is the Google review rating for the place and on the Y Axis determines number of people who have rated in Lakhs.
+plot(data_places$Google.review.rating, data_places$Number.of.google.review.in.lakhs)
+```
+```{r}
+#the below graph explains which is the best place to visit at which time of the day.
+library(ggplot2)
+
+ggplot(data_places) +
+ aes(x = Best.Time.to.visit, y = Significance) +
+ geom_tile() +
+ theme_minimal()
+
+```
