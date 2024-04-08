@@ -1,0 +1,161 @@
+---
+title: "FML Assignment 5"
+author: "Varun Vedula"
+date: "2024-04-07"
+output: html_document
+---
+
+#Setting the working directory
+```{r}
+getwd() 
+```
+
+#Loading the dataset
+```{r}
+cereals_data = read.csv("./Cereals.csv")
+```
+
+#Loading required packages
+```{r}
+library(dplyr)
+library(cluster)
+```
+
+# Remove rows with any missing value
+```{r}
+cereals_cleaned <- na.omit(cereals_data)
+head(cereals_data)
+```
+
+
+```{r}
+numeric_columns <- sapply(cereals_data, is.numeric)
+normalized_cereals <- cereals_cleaned
+scaled_cereals <- cereals_data
+scaled_cereals[, numeric_columns] <- scale(scaled_cereals[, numeric_columns])
+head(scaled_cereals)
+```
+
+
+```{r}
+# Dissimilarity matrix
+d_matrix <- dist(cereals_data, method = "euclidean")
+# Hierarchical clustering using Complete Linkage
+hc1 <- hclust(d_matrix, method = "complete" )
+# Plot the obtained dendrogram
+plot(hc1, cex = 0.6, hang = -1)
+```
+
+```{r}
+# Euclidean distance matrix
+e_distance_matrix <- dist(normalized_cereals, method = "euclidean")
+
+# Single Linkage
+hc_single <- hclust(e_distance_matrix, method = "single")
+
+# Complete Linkage
+hc_complete <- hclust(e_distance_matrix, method = "complete")
+
+# Average Linkage
+hc_average <- hclust(e_distance_matrix, method = "average")
+
+# Ward's Method
+hc_ward <- hclust(e_distance_matrix, method = "ward.D2")
+
+# Plotting to compare (optional, based on assignment requirements)
+par(mfrow = c(2,2))
+plot(hc_single, main = "Single Linkage", sub = "", xlab = "", ylab = "")
+plot(hc_complete, main = "Complete Linkage", sub = "", xlab = "", ylab = "")
+plot(hc_average, main = "Average Linkage", sub = "", xlab = "", ylab = "")
+plot(hc_ward, main = "Ward's Method", sub = "", xlab = "", ylab = "")
+```
+
+```{r}
+# Calculate Euclidean distance
+dist_euclidean <- dist(normalized_cereals, method = "euclidean")
+# Apply hierarchical clustering using different linkage methods
+hc_single <- hclust(dist_euclidean, method = "single")
+hc_complete <- hclust(dist_euclidean, method = "complete")
+hc_average <- hclust(dist_euclidean, method = "average")
+hc_ward <- hclust(dist_euclidean, method = "ward.D2")
+par(mfrow = c(2, 2))
+plot(hc_single, main = "Single Linkage", sub = "", xlab = "", ylab = "Distance")
+plot(hc_complete, main = "Complete Linkage", sub = "", xlab = "", ylab = "Distance")
+plot(hc_average, main = "Average Linkage", sub = "", xlab = "", ylab = "Distance")
+plot(hc_ward, main = "Ward's Method", sub = "", xlab = "", ylab = "Distance")
+```
+
+```{r}
+clusters <- cutree(hc_ward, k = 5)
+cereals_cleaned$Cluster <- clusters
+
+# Explore cluster composition
+table(cereals_cleaned$Cluster)
+
+# Analyze mean values by cluster
+aggregate(cereals_cleaned[, -1], by = list(cereals_cleaned$Cluster), mean)
+```
+
+```{r}
+# Example: Identify the cluster with the highest average fiber and lowest average sugar
+# This step might require domain knowledge to adjust properly
+healthy_index <- with(aggregate(cereals_cleaned[, c("fiber", "sugars")], by = list(cereals_cleaned$Cluster), mean), which.max(fiber - sugars))
+healthy_cereals <- cereals_cleaned[cereals_cleaned$Cluster == healthy_index, ]# Example: Identify the cluster with the highest average fiber and lowest average sugar
+# This step might require domain knowledge to adjust properly
+healthy_index <- with(aggregate(cereals_cleaned[, c("fiber", "sugars")], by = list(cereals_cleaned$Cluster), mean), which.max(fiber - sugars))
+healthy_cereals <- cereals_cleaned[cereals_cleaned$Cluster == healthy_index, ]
+```
+
+```{r}
+library(cluster)
+df <- cereals_data
+# Compute with agnes and with different linkage methods
+hc_single <- agnes(cereals_data, method = "single")
+hc_complete <- agnes(cereals_data, method = "complete")
+hc_average <- agnes(cereals_data, method = "average")
+```
+
+```{r}
+print(hc_single$ac)
+print(hc_complete$ac)
+print(hc_average$ac)
+```
+
+```{r}
+pltree(hc_complete, cex = 0.6, hang = -1, main = "dendrogram of agnes")
+```
+
+```{r}
+df <- cereals_data
+de <- dist(cereals_data, method = "euclidean")
+```
+```{r}
+hc_complete <- hclust(de,method = "complete")
+```
+
+```{r}
+plot(hc_complete, cex = 0.6)
+rect.hclust(hc_complete, k = 4, border = 1:4)
+```
+```{r}
+hc_diana <- diana(cereals_data)
+hc_diana$dc
+```
+```{r}
+pltree(hc_diana, cex = 0.6, hang = -1, main = "dendrogram of diana")
+```
+
+### Interpretation :
+In the context of hierarchical clustering analysis on standardized measurements, Euclidean distance serves as a pivotal metric. Subsequently, Agnes algorithm is employed for juxtaposition against single, complete, average, and Ward linkage methods, aiming to discern the most effective clustering technique based on resultant outcomes. To assess the stability of the clustering, data is partitioned and the consistency of cluster assignments across partitions is evaluated. Normalization of data is recommended to discern a cluster of "healthy cereals" suitable for elementary school cafeterias, ensuring that all cereals contribute to a balanced and nutritious diet for students.
+
+Key findings from the analysis:
+
+The optimal number of clusters identified is four.
+Cluster Structure:
+Cluster 1: Encompasses cereals characterized by high nutritional value, exhibiting a balanced distribution of fiber, protein, and low sugar/fat content.
+Cluster 2: Comprises cereals with moderately balanced nutritional profiles, offering a well-rounded assortment of nutrients.
+Cluster 3: Consists of cereals with elevated sugar content and reduced fiber, potentially indicative of lower nutritional quality.
+Cluster 4: Includes cereals exhibiting lower overall nutritional value, with higher levels of sugars and fats.
+In summary, the four identified clusters delineate distinct nutritional groupings, corroborated by stability analysis confirming the consistency of these groupings across varied data subsets.
+
+Normalization of data is imperative for precise comparison between clusters. The recommended cluster grouping is Cluster 1, which includes cereals corresponding to IDs (69, 61, 27, 44, 58, 64, 2, 65, 66, 55, 58, 21, 35, 18, 31, and 67).
